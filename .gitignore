@@ -1,0 +1,6 @@
+# Local
+.venv
+
+# Generated log files
+failed.txt
+succ.txt

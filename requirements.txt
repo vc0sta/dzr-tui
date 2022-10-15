@@ -1,1 +1,3 @@
 deezer-py
+pytermgui
+pyYAML

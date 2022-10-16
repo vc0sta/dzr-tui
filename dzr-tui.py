@@ -16,6 +16,15 @@ import mpv
 client = Deezer()
 player =  mpv.MPV()
 
+welcome_message="""
+██████╗ ███████╗██████╗        ██████╗██╗     ██╗
+██╔══██╗╚══███╔╝██╔══██╗      ██╔════╝██║     ██║
+██║  ██║  ███╔╝ ██████╔╝█████╗██║     ██║     ██║
+██║  ██║ ███╔╝  ██╔══██╗╚════╝██║     ██║     ██║
+██████╔╝███████╗██║  ██║      ╚██████╗███████╗██║
+╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
+"""
+
 def _process_arguments(argv: list[str] | None = None) -> Namespace:
     """Processes command line arguments.
     Note that you don't _have to_ use the bultin argparse module for this; it
@@ -80,9 +89,11 @@ def _define_layout() -> ptg.Layout:
 def search_for(term, body):
     if term != "":
         response = client.api.search_track(term)
-        body._widgets = []
+        widgets = []
         for data in response['data']:
-            body._add_widget(Track(data))
+            widgets.append(Track(data))
+        body.set_widgets(widgets)
+        
 
     
 def main(argv: list[str] | None = None) -> None:
@@ -98,12 +109,13 @@ def main(argv: list[str] | None = None) -> None:
 
         search_input = ptg.InputField(value="", prompt="Search:")
 
-        body_window = ptg.Window("",  is_static = True, is_noresize = True)
+        body_content = ptg.Container(welcome_message)
+        body_window = ptg.Window(body_content, box='EMPTY')
 
         search = ptg.Window(
                     ptg.Splitter(
                         search_input,
-                        ptg.Button("Search", lambda *_: search_for(search_input.value, body_window) )
+                        ptg.Button("Search", lambda *_: search_for(search_input.value, body_content) )
                     )
                 , box="EMPTY")
         
@@ -137,7 +149,7 @@ def main(argv: list[str] | None = None) -> None:
         # manager.add(left_menu, assign="body_right")
         manager.add(body_window, assign="body")
 
-    # ptg.tim.print("")
+    ptg.tim.print("Application closed.")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

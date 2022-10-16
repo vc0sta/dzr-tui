@@ -2,3 +2,5 @@ deezer-py
 pytermgui
 pyYAML
 python-mpv
+click
+deemix

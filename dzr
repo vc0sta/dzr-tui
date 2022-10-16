@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from __future__ import annotations
 
 import sys
@@ -5,16 +6,13 @@ from argparse import ArgumentParser, Namespace
 
 import pytermgui as ptg
 
-from custom_widgets.player_info import PlayerInfo
-from custom_widgets.player_control import PlayerControl
+from custom_widgets.media_player import Player
 from custom_widgets.track_item import Track
 
 from deezer import Deezer
 
-import mpv
-
 client = Deezer()
-player =  mpv.MPV()
+player_wrapper = Player()
 
 welcome_message="""
 ██████╗ ███████╗██████╗        ██████╗██╗     ██╗
@@ -81,8 +79,10 @@ def _define_layout() -> ptg.Layout:
     layout.add_break()
 
     # A footer with a static height of 1
-    layout.add_slot("Player control", height=4, width=0.2)
-    layout.add_slot("Player info", height=4)
+    layout.add_slot("Player", height=4)
+
+    # layout.add_slot("Player control", height=4, width=0.2)
+    # layout.add_slot("Player info", height=4)
 
     return layout
 
@@ -91,9 +91,8 @@ def search_for(term, body):
         response = client.api.search_track(term)
         widgets = []
         for data in response['data']:
-            widgets.append(Track(data))
+            widgets.append(Track(player_wrapper, data))
         body.set_widgets(widgets)
-        
 
     
 def main(argv: list[str] | None = None) -> None:
@@ -131,23 +130,27 @@ def main(argv: list[str] | None = None) -> None:
         manager.add(search, assign="search_bar")
         manager.add(user_menu, assign="user_menu")
 
-        player_control = ptg.Window(
-            PlayerControl(player),
-            box="EMPTY"
-        )
+        player = ptg.Window(player_wrapper, box="EMPTY")
 
-        player_info = ptg.Window(
-                PlayerInfo(player),
-            box="EMPTY"
-        )
+        # player_control = ptg.Window(
+        #     PlayerControl(player),
+        #     box="EMPTY"
+        # )
+
+        # player_info = ptg.Window(
+        #         PlayerInfo(player),
+        #     box="EMPTY"
+        # )
 
         # Since the second slot, body was not assigned to, we need to manually assign
         # to "player"
-        manager.add(player_control, assign="player_control")
-        manager.add(player_info, assign="player_info")
+        # manager.add(player_control, assign="player_control")
+        # manager.add(player_info, assign="player_info")
 
         # manager.add(left_menu, assign="body_right")
         manager.add(body_window, assign="body")
+
+        manager.add(player, assign="player")
 
     ptg.tim.print("Application closed.")
 

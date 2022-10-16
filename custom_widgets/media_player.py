@@ -1,23 +1,31 @@
 from dataclasses import dataclass
 from threading import Thread
-from time import sleep
-from time import strftime, gmtime
+from time import sleep, strftime, gmtime
+import mpv
 
-from pytermgui import Container, StyleManager, real_length, tim, Splitter, Slider
+from pytermgui import Container, Button, StyleManager, real_length, tim, Splitter, Slider
 
 @dataclass
-class PlayerInfoData:
+class PlayerData:
     track: str
     artist: str
     album: str
     date: str
+    is_playing: bool
 
+class Player(Container):
+    buttons = {
+        "play":  "▶",
+        "pause": "⏸",
+        "none": ""
+    }
 
-class PlayerInfo(Container):
-    def __init__(self, player, **attrs) -> None:
+    def __init__(self, **attrs) -> None:
         super().__init__(**attrs)
+        self.player = mpv.MPV()
         
-        self.player = player
+        self.is_playing = False
+        self.play_button = self.buttons["none"]
 
         self.title = ''
         self.artist = ''
@@ -31,7 +39,7 @@ class PlayerInfo(Container):
         Thread(target=self._monitor_loop, daemon=True).start()
 
 
-    def _request_data(self) -> PlayerInfoData:
+    def _request_data(self) -> PlayerData:
         if self.player.metadata != None:
             metadata = self.player.metadata  
             
@@ -41,9 +49,12 @@ class PlayerInfo(Container):
             self.title = metadata['title']
             self.artist = metadata['artist']
             self.album = metadata['album']
-            self.date = metadata['date']
+            self.date = metadata['date'][:4]
 
             self.consolidated_info = f"{self.title} - {self.artist} ({self.album} - {self.date})"
+
+            self.is_playing = not self.player._get_property('pause')
+            self.play_button = self.buttons["pause"] if self.is_playing else self.buttons["play"]
 
         else:
             self.duration = 1
@@ -56,19 +67,33 @@ class PlayerInfo(Container):
 
             self.consolidated_info = ""
 
+            self.play_button = self.buttons["none"]
+        
+        
+
 
     def _monitor_loop(self) -> None:
         while True:
             self._request_data()
             self.update_content()
             sleep(self.timeout)
-            
+
+    def _press_play_button(self):
+        self.player._set_property('pause', self.is_playing)
+        
+    def play_media(self, media_name):
+        self.player.play(media_name)
+        self.player._set_property("pause", False)
+        
     def update_content(self) -> None:
         self.set_widgets(
             [                
                     self.consolidated_info,
-                    Splitter(strftime("%M:%S", gmtime(self.elapsed)), 
-                    Slider(), 
-                    strftime("%M:%S", gmtime(self.duration)))
+                    Splitter(
+                        Button(self.play_button, lambda *_: self._press_play_button()),
+                        strftime("%M:%S", gmtime(self.elapsed)), 
+                        Slider(), 
+                        strftime("%M:%S", gmtime(self.duration))
+                    )
             ]
         )

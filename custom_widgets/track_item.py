@@ -5,6 +5,8 @@ from time import strftime, gmtime
 
 from pytermgui import Container, StyleManager, real_length, tim, Button, Splitter
 
+from .downloader import DLR
+
 @dataclass
 class TrackData:
     id: int
@@ -19,7 +21,7 @@ class Track(Container):
         "play":  "▶"
     }
 
-    def __init__(self, data, **attrs) -> None:
+    def __init__(self, player_wrapper, data, **attrs) -> None:
         super().__init__(**attrs)
         self.id = data["id"]
         self.title = data["title"]
@@ -28,12 +30,15 @@ class Track(Container):
         self.artist_link = data["artist"]["link"]
         self.album = data["album"]["title"]
 
+        self.player_wrapper = player_wrapper
+
         # Display everything
         self.update_content()
 
     def _press_play_button(self):
-        # Donwload then play song
-        pass
+        # download_manager = DLR(portable=None)
+        # download_manager.loadLinks(url=[self.link], bitrate="320")
+        self.player_wrapper.play_media('music.mp3')
 
     def update_content(self) -> None:
         self.set_widgets(

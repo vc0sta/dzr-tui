@@ -21,6 +21,10 @@ welcome_message="""
 ██║  ██║ ███╔╝  ██╔══██╗╚════╝██║     ██║     ██║
 ██████╔╝███████╗██║  ██║      ╚██████╗███████╗██║
 ╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
+
+        THE TERMINAL DEEZER CLIENT
+
+
 """
 
 def _process_arguments(argv: list[str] | None = None) -> Namespace:

@@ -3,8 +3,8 @@
 *__pycache__*
 
 # Generated log files
-failed.txt
-succ.txt
+failedDL.txt
+Downloaded.txt
 
 # Test files
-music.mp3
+music

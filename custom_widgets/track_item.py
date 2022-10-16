@@ -18,10 +18,11 @@ class TrackData:
 
 class Track(Container):
     buttons = {
-        "play":  "▶"
+        "play":  "▶",
+        "download": "↓"
     }
 
-    def __init__(self, player_wrapper, data, **attrs) -> None:
+    def __init__(self, media_player, data, **attrs) -> None:
         super().__init__(**attrs)
         self.id = data["id"]
         self.title = data["title"]
@@ -30,16 +31,27 @@ class Track(Container):
         self.artist_link = data["artist"]["link"]
         self.album = data["album"]["title"]
 
-        self.player_wrapper = player_wrapper
+        self.media_player = media_player
 
         # Display everything
         self.update_content()
 
-    def _press_play_button(self):
-        # download_manager = DLR(portable=None)
-        # download_manager.loadLinks(url=[self.link], bitrate="320")
-        self.player_wrapper.play_media('music.mp3')
+    def download(self):
+        download_manager = DLR(portable=None)
+        # TODO: The bitrate/location should be defined by the end-user (TUI)
+        #      Maybe some queue should be created as well to deal with multiple downloads
+        #      downloader.py already has such funcionality, this should be considered while merging.
+        download_manager.loadLinks(url=[self.link], bitrate="320")
+        download_manager.change('downloadLocation','./music/')
+        download_manager.getsongs()
 
+    def play(self):
+        self.download()
+
+        # TODO: Understand why artist_name is a Tuple
+        #   (keep in mind that this is a temp approach and play() should work with streaming)
+        self.media_player.play(f"music/{self.artist_name[0]} - {self.title}.mp3")
+        
     def update_content(self) -> None:
         self.set_widgets(
             [   
@@ -47,7 +59,9 @@ class Track(Container):
                     self.title,
                     self.artist_name,
                     self.album,
-                    Button(self.buttons["play"], lambda *_: self._press_play_button())
+                    Splitter(
+                        Button(self.buttons["play"], lambda *_: self.play()),
+                        Button(self.buttons["download"], lambda *_: self.download()))
                 )             
                 
             ]

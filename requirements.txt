@@ -1,3 +1,4 @@
 deezer-py
 pytermgui
 pyYAML
+python-mpv

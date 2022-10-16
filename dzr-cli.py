@@ -171,7 +171,7 @@ if __name__ == '__main__':
 	tp = DLR(portable=None,failedFile='failed.txt',successFile='succ.txt')
 	
 	tp.loadLinks(url=['https://www.deezer.com/en/track/3135556'], bitrate="320")
-	tp.loadLinks(filepath='downloadsflac.txt', bitrate="flac")
+	# tp.loadLinks(filepath='downloadsflac.txt', bitrate="flac")
 
 	tp.change('downloadLocation','.')
 

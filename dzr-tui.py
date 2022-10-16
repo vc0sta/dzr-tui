@@ -5,6 +5,14 @@ from argparse import ArgumentParser, Namespace
 
 import pytermgui as ptg
 
+from custom_widgets.player_info import PlayerInfo
+
+from deezer import Deezer
+
+import mpv
+
+client = Deezer()
+player =  mpv.MPV()
 
 def _process_arguments(argv: list[str] | None = None) -> Namespace:
     """Processes command line arguments.
@@ -59,7 +67,7 @@ def _define_layout() -> ptg.Layout:
 
     # A slot in the same row as body, using the full non-occupied height and
     # 20% of the terminal's height.
-    layout.add_slot("Body right", width=0.2)
+    # layout.add_slot("Body right", width=0.2)
 
     # A body slot that will fill the entire width, and the height is remaining
     layout.add_slot("Body")
@@ -73,7 +81,21 @@ def _define_layout() -> ptg.Layout:
 
     return layout
 
+def search_for(term, body):
+    if term != "":
+        response = client.api.search(term)
+        widgets = []
+        for item in response['data']:
+            widgets.append(ptg.Button(f"{item['title']} - {item['artist']['name']}"))
+        body.set_widgets(widgets)
 
+def play_button(file_name):
+    player.play(file_name)
+    
+def pause_button():
+    current = player._get_property('pause')
+    player._set_property('pause', not current)
+    
 def main(argv: list[str] | None = None) -> None:
     """Runs the application."""
 
@@ -85,10 +107,14 @@ def main(argv: list[str] | None = None) -> None:
     with ptg.WindowManager() as manager:
         manager.layout = _define_layout()
 
+        search_input = ptg.InputField(value="", prompt="Search:")
+
+        body_window = ptg.Window("My body window",  is_static = True, is_noresize = True)
+
         search = ptg.Window(
                     ptg.Splitter(
-                        ptg.InputField(value="artist|album|track", prompt="Search:"),
-                        ptg.Button("Search", lambda *_: manager.stop())
+                        search_input,
+                        ptg.Button("Search", lambda *_: search_for(search_input.value, body_window) )
                     )
                 , box="EMPTY")
         
@@ -104,33 +130,27 @@ def main(argv: list[str] | None = None) -> None:
         manager.add(search, assign="search_bar")
         manager.add(user_menu, assign="user_menu")
 
-        left_menu = ptg.Window(
-                ptg.Button("Music", lambda *_: manager.stop()),
-                "",
-                ptg.Button("Podcasts", lambda *_: manager.stop()),
-                "",
-                ptg.Button("Favorites", lambda *_: manager.stop()),
-            box="SINGLE"
-            )
+        # left_menu = ptg.Window(
+        #         ptg.Button("Music", lambda *_: manager.stop()),
+        #         "",
+        #         ptg.Button("Podcasts", lambda *_: manager.stop()),
+        #         "",
+        #         ptg.Button("Favorites", lambda *_: manager.stop()),
+        #     box="SINGLE"
+        #     )
 
         player_control = ptg.Window(
             ptg.Splitter( 
-                "|<",
-                ">",
-                ">|"
+                # "|<",
+                ptg.Button(">", lambda *_: play_button('music.mp3')),
+                ptg.Button("||", lambda *_: pause_button()),
+                # ">|"
             ),
             box="SINGLE"
         )
 
         player_info = ptg.Window(
-                ptg.Container(
-                    "The Metal - Tenacious D",
-                    ptg.Splitter(
-                        "00:05",
-                        ptg.Slider(min_width=10),
-                        "02:46"
-                    ),                
-                ),
+                PlayerInfo(player),
             box="EMPTY"
         )
 
@@ -139,11 +159,10 @@ def main(argv: list[str] | None = None) -> None:
         manager.add(player_control, assign="player_control")
         manager.add(player_info, assign="player_info")
 
-        manager.add(left_menu, assign="body_right")
-        manager.add(ptg.Window("My body window"), assign="body")
+        # manager.add(left_menu, assign="body_right")
+        manager.add(body_window, assign="body")
 
     # ptg.tim.print("")
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])

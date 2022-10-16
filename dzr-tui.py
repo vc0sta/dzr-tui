@@ -7,6 +7,7 @@ import pytermgui as ptg
 
 from custom_widgets.player_info import PlayerInfo
 from custom_widgets.player_control import PlayerControl
+from custom_widgets.track_item import Track
 
 from deezer import Deezer
 
@@ -47,7 +48,7 @@ def _configure_widgets() -> None:
         ptg.Container.styles.border__corner = "myapp.border"
     """
 
-    ptg.boxes.SINGLE.set_chars_of(ptg.Window)
+    # ptg.boxes.SINGLE.set_chars_of(ptg.Window)
 
 
 def _define_layout() -> ptg.Layout:
@@ -78,11 +79,10 @@ def _define_layout() -> ptg.Layout:
 
 def search_for(term, body):
     if term != "":
-        response = client.api.search(term)
-        widgets = []
-        for item in response['data']:
-            widgets.append(ptg.Button(f"{item['title']} - {item['artist']['name']}"))
-        body.set_widgets(widgets)
+        response = client.api.search_track(term)
+        body._widgets = []
+        for data in response['data']:
+            body._add_widget(Track(data))
 
     
 def main(argv: list[str] | None = None) -> None:
@@ -98,7 +98,7 @@ def main(argv: list[str] | None = None) -> None:
 
         search_input = ptg.InputField(value="", prompt="Search:")
 
-        body_window = ptg.Window("My body window",  is_static = True, is_noresize = True)
+        body_window = ptg.Window("",  is_static = True, is_noresize = True)
 
         search = ptg.Window(
                     ptg.Splitter(

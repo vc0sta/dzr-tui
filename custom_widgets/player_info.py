@@ -46,7 +46,7 @@ class PlayerInfo(Container):
             self.consolidated_info = f"{self.title} - {self.artist} ({self.album} - {self.date})"
 
         else:
-            self.duration = 0
+            self.duration = 1
             self.elapsed = 1
 
             self.title = ""

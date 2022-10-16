@@ -68,7 +68,7 @@ class PlayerInfo(Container):
             [                
                     self.consolidated_info,
                     Splitter(strftime("%M:%S", gmtime(self.elapsed)), 
-                    Slider(value=self.duration/self.elapsed), 
+                    Slider(), 
                     strftime("%M:%S", gmtime(self.duration)))
             ]
         )

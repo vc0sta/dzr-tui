@@ -6,6 +6,7 @@ from argparse import ArgumentParser, Namespace
 import pytermgui as ptg
 
 from custom_widgets.player_info import PlayerInfo
+from custom_widgets.player_control import PlayerControl
 
 from deezer import Deezer
 
@@ -64,15 +65,9 @@ def _define_layout() -> ptg.Layout:
     layout.add_slot("User menu", height=1, width=0.2)
     layout.add_break()
 
-
-    # A slot in the same row as body, using the full non-occupied height and
-    # 20% of the terminal's height.
-    # layout.add_slot("Body right", width=0.2)
-
-    # A body slot that will fill the entire width, and the height is remaining
+    # A body slot that will fill the entire width, and the height
     layout.add_slot("Body")
     
-
     layout.add_break()
 
     # A footer with a static height of 1
@@ -89,12 +84,6 @@ def search_for(term, body):
             widgets.append(ptg.Button(f"{item['title']} - {item['artist']['name']}"))
         body.set_widgets(widgets)
 
-def play_button(file_name):
-    player.play(file_name)
-    
-def pause_button():
-    current = player._get_property('pause')
-    player._set_property('pause', not current)
     
 def main(argv: list[str] | None = None) -> None:
     """Runs the application."""
@@ -130,23 +119,9 @@ def main(argv: list[str] | None = None) -> None:
         manager.add(search, assign="search_bar")
         manager.add(user_menu, assign="user_menu")
 
-        # left_menu = ptg.Window(
-        #         ptg.Button("Music", lambda *_: manager.stop()),
-        #         "",
-        #         ptg.Button("Podcasts", lambda *_: manager.stop()),
-        #         "",
-        #         ptg.Button("Favorites", lambda *_: manager.stop()),
-        #     box="SINGLE"
-        #     )
-
         player_control = ptg.Window(
-            ptg.Splitter( 
-                # "|<",
-                ptg.Button(">", lambda *_: play_button('music.mp3')),
-                ptg.Button("||", lambda *_: pause_button()),
-                # ">|"
-            ),
-            box="SINGLE"
+            PlayerControl(player),
+            box="EMPTY"
         )
 
         player_info = ptg.Window(

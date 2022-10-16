@@ -1,6 +1,6 @@
 # Local
 .venv
-__pycache__
+*__pycache__*
 
 # Generated log files
 failed.txt

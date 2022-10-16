@@ -28,8 +28,8 @@ class LogListener:
 	# deemix call this function for logging to cli 
 	def send(self, key, value=None):
 		logString = formatListener(key, value)
-		if logString:
-			print(logString)
+		# if logString:
+			# print(logString)
 		self.writetxt(key,value)
 	
 	# write whether a track downloaded or failed
@@ -58,8 +58,7 @@ class DLR():
 		localpath = Path('.')
 		self.configFolder = localpath / \
 			'config' if portable else localpaths.getConfigFolder()
-
-		print(self.configFolder)
+			
 		self.settings = loadSettings(self.configFolder)
 
 		if Spotify:
@@ -102,7 +101,7 @@ class DLR():
 				downloadObject = generateDownloadObject(
 					self.dz, link, bitrate, self.plugins, self.listener)
 			except GenerationError as e:
-				print(f"{e.link}: {e.message}")
+				# print(f"{e.link}: {e.message}")
 				continue
 			if isinstance(downloadObject, list):
 				self.downloadObjects += downloadObject
@@ -112,14 +111,14 @@ class DLR():
 	# starts the download of all downloadObjects in queue then clears it once finished
 	def getsongs(self):
 		sz = len(self.downloadObjects)
-		print(f"DOWNLOADING {sz}")
+		# print(f"DOWNLOADING {sz}")
 
 		for obj in self.downloadObjects:
 			if obj.__type__ == "Convertable":
 				obj = self.plugins[obj.plugin].convert(
 					self.dz, obj, self.settings, self.listener)
 			Downloader(self.dz, obj, self.settings, self.listener).start()
-		print(f"ALL DONE!: \n\t{self.listener.failed}/{sz} FAILED")
+		# print(f"ALL DONE!: \n\t{self.listener.failed}/{sz} FAILED")
 		self.downloadObjects = []
 
 	# reads in links from file or changes bitrate text to TrackFormat
@@ -162,10 +161,10 @@ class DLR():
 	def resetSetting(self):
 		self.settings = loadSettings(self.configFolder)
 	# print current settings
-	def printSettings(self):
-		print("printing settings")
-		for k, v in self.settings.items():
-			print(f'{k}\n{v}\n\n')
+	# def printSettings(self):
+		# # print("printing settings")
+		# for k, v in self.settings.items():
+			# print(f'{k}\n{v}\n\n')
 
 
 if __name__ == '__main__':

@@ -22,7 +22,7 @@ class Player(Container):
 
     def __init__(self, **attrs) -> None:
         super().__init__(**attrs)
-        self.player = mpv.MPV()
+        self.mpv = mpv.MPV()
         
         self.is_playing = False
         self.play_button = self.buttons["none"]
@@ -40,11 +40,11 @@ class Player(Container):
 
 
     def _request_data(self) -> PlayerData:
-        if self.player.metadata != None:
-            metadata = self.player.metadata  
+        if self.mpv.metadata != None:
+            metadata = self.mpv.metadata  
             
-            self.duration = self.player._get_property('duration')
-            self.elapsed = self.player._get_property('time-pos')
+            self.duration = self.mpv._get_property('duration')
+            self.elapsed = self.mpv._get_property('time-pos')
 
             self.title = metadata['title']
             self.artist = metadata['artist']
@@ -53,7 +53,7 @@ class Player(Container):
 
             self.consolidated_info = f"{self.title} - {self.artist} ({self.album} - {self.date})"
 
-            self.is_playing = not self.player._get_property('pause')
+            self.is_playing = not self.mpv._get_property('pause')
             self.play_button = self.buttons["pause"] if self.is_playing else self.buttons["play"]
 
         else:
@@ -79,11 +79,11 @@ class Player(Container):
             sleep(self.timeout)
 
     def _press_play_button(self):
-        self.player._set_property('pause', self.is_playing)
+        self.mpv._set_property('pause', self.is_playing)
         
-    def play_media(self, media_name):
-        self.player.play(media_name)
-        self.player._set_property("pause", False)
+    def play(self, media_name):
+        self.mpv.play(media_name)
+        self.mpv._set_property("pause", False)
         
     def update_content(self) -> None:
         self.set_widgets(

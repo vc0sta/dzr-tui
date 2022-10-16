@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from logging import error
 import click
 from pathlib import Path
@@ -59,6 +58,8 @@ class DLR():
 		localpath = Path('.')
 		self.configFolder = localpath / \
 			'config' if portable else localpaths.getConfigFolder()
+
+		print(self.configFolder)
 		self.settings = loadSettings(self.configFolder)
 
 		if Spotify:
@@ -170,9 +171,9 @@ class DLR():
 if __name__ == '__main__':
 	tp = DLR(portable=None,failedFile='failed.txt',successFile='succ.txt')
 	
-	tp.loadLinks(url=['https://www.deezer.com/en/track/3135556'], bitrate="320")
+	tp.loadLinks(url=['https://www.deezer.com/en/track/722093132'], bitrate="320")
 	# tp.loadLinks(filepath='downloadsflac.txt', bitrate="flac")
 
 	tp.change('downloadLocation','.')
 
-	tp.playsong()
+	tp.getsongs()

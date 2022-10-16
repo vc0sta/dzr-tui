@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from threading import Thread
 from time import sleep
+from time import strftime, gmtime
+
+
 
 
 from pytermgui import Container, StyleManager, real_length, tim, Splitter, Slider
@@ -30,13 +33,29 @@ class PlayerInfo(Container):
 
 
     def _request_data(self) -> PlayerInfoData:
-        metadata = self.player.metadata if self.player.metadata != None else {"title": "", "artist": "", "album": "", "date": "" }
+        if self.player.metadata != None:
+            metadata = self.player.metadata  
+            
+            self.duration = strftime("%M:%S", gmtime(self.player._get_property('duration')))
+            self.elapsed = strftime("%M:%S", gmtime(self.player._get_property('time-pos')))
+
+        else:
+            metadata = { "title": "", 
+               "artist": "", 
+               "album": "", 
+               "date": "" 
+            }
+
+            self.duration = "00:00"
+            self.elapsed = "00:00"
 
             
         self.title = metadata['title']
         self.artist = metadata['artist']
         self.album = metadata['album']
         self.date = metadata['date']
+
+
 
     def _monitor_loop(self) -> None:
         while True:
@@ -48,6 +67,6 @@ class PlayerInfo(Container):
         self.set_widgets(
             [                
                     f"{self.title} - {self.artist} ({self.album} - {self.date})",
-                    Splitter("00:00", Slider(), "00:00"), 
+                    Splitter(self.elapsed, Slider(), self.duration), 
             ]
         )

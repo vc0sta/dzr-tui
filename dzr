@@ -8,6 +8,8 @@ import pytermgui as ptg
 
 from custom_widgets.media_player import Player
 from custom_widgets.track_item import Track
+from custom_widgets.artist_item import Artist
+from custom_widgets.album_item import Album
 
 from deezer import Deezer
 
@@ -23,8 +25,6 @@ welcome_message="""
 ╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
 
         THE TERMINAL DEEZER CLIENT
-
-
 """
 
 def _process_arguments(argv: list[str] | None = None) -> Namespace:
@@ -58,7 +58,7 @@ def _configure_widgets() -> None:
         ptg.Button.styles.label = "myapp.button.label"
         ptg.Container.styles.border__corner = "myapp.border"
     """
-
+    ptg.Button.set_char("delimiter", [""] * 2)
     # ptg.boxes.SINGLE.set_chars_of(ptg.Window)
 
 
@@ -90,12 +90,32 @@ def _define_layout() -> ptg.Layout:
 
     return layout
 
-def search_for(term, body):
-    if term != "":
-        response = client.api.search_track(term)
+def search_for(query, body, filter_by=""):
+    search = {
+        "track": client.api.search_track(query),
+        "artist": client.api.search_artist(query),
+        "album": client.api.search_album(query),
+        "default": client.api.search(query)
+    }
+
+    if query != "":
+        response = search.get(filter_by, "default")
         widgets = []
         for data in response['data']:
-            widgets.append(Track(player_wrapper, data))
+            
+            if data['type'] == 'track':
+                widgets.append(
+                    Track(player_wrapper, data)
+                    )
+            elif data['type'] == 'artist':
+                widgets.append(
+                    Artist(data)
+                    )
+            elif data['type'] == 'album':
+                widgets.append(
+                    Album(data)
+                    )
+
         body.set_widgets(widgets)
 
     
@@ -110,7 +130,7 @@ def main(argv: list[str] | None = None) -> None:
     with ptg.WindowManager() as manager:
         manager.layout = _define_layout()
 
-        search_input = ptg.InputField(value="", prompt="Search:")
+        search_input = ptg.InputField(value="", prompt="[primary]Search for:")
 
         body_content = ptg.Container(welcome_message)
         body_window = ptg.Window(body_content, box='EMPTY')
@@ -118,14 +138,19 @@ def main(argv: list[str] | None = None) -> None:
         search = ptg.Window(
                     ptg.Splitter(
                         search_input,
-                        ptg.Button("Search", lambda *_: search_for(search_input.value, body_content) )
+                        ptg.Splitter(
+                            "[primary]Filter by:",
+                            ptg.Button(" Track ", lambda *_: search_for(search_input.value, body_content, 'track')),
+                            ptg.Button(" Artist ", lambda *_: search_for(search_input.value, body_content, 'artist')),
+                            ptg.Button(" Album ", lambda *_: search_for(search_input.value, body_content, 'album'))
+                        )
                     )
                 , box="EMPTY")
         
         user_menu = ptg.Window(
             ptg.Splitter(
-                ptg.Button("User", lambda *_: manager.stop()),
-                ptg.Button("Close", lambda *_: manager.stop()),
+                # ptg.Button("User", lambda *_: manager.stop()),
+                ptg.Button("[bold red] X ", lambda *_: manager.stop()),
             ),
             box="EMPTY"
         )

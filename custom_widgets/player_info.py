@@ -3,9 +3,6 @@ from threading import Thread
 from time import sleep
 from time import strftime, gmtime
 
-
-
-
 from pytermgui import Container, StyleManager, real_length, tim, Splitter, Slider
 
 @dataclass
@@ -27,6 +24,8 @@ class PlayerInfo(Container):
         self.album = ''
         self.date = ''
 
+        self.consolidated_info = ""
+
         self.timeout = 1
 
         Thread(target=self._monitor_loop, daemon=True).start()
@@ -36,25 +35,26 @@ class PlayerInfo(Container):
         if self.player.metadata != None:
             metadata = self.player.metadata  
             
-            self.duration = strftime("%M:%S", gmtime(self.player._get_property('duration')))
-            self.elapsed = strftime("%M:%S", gmtime(self.player._get_property('time-pos')))
+            self.duration = self.player._get_property('duration')
+            self.elapsed = self.player._get_property('time-pos')
+
+            self.title = metadata['title']
+            self.artist = metadata['artist']
+            self.album = metadata['album']
+            self.date = metadata['date']
+
+            self.consolidated_info = f"{self.title} - {self.artist} ({self.album} - {self.date})"
 
         else:
-            metadata = { "title": "", 
-               "artist": "", 
-               "album": "", 
-               "date": "" 
-            }
+            self.duration = 0
+            self.elapsed = 1
 
-            self.duration = "00:00"
-            self.elapsed = "00:00"
+            self.title = ""
+            self.artist = ""
+            self.album = ""
+            self.date = ""
 
-            
-        self.title = metadata['title']
-        self.artist = metadata['artist']
-        self.album = metadata['album']
-        self.date = metadata['date']
-
+            self.consolidated_info = ""
 
 
     def _monitor_loop(self) -> None:
@@ -66,7 +66,9 @@ class PlayerInfo(Container):
     def update_content(self) -> None:
         self.set_widgets(
             [                
-                    f"{self.title} - {self.artist} ({self.album} - {self.date})",
-                    Splitter(self.elapsed, Slider(), self.duration), 
+                    self.consolidated_info,
+                    Splitter(strftime("%M:%S", gmtime(self.elapsed)), 
+                    Slider(value=self.duration/self.elapsed), 
+                    strftime("%M:%S", gmtime(self.duration)))
             ]
         )

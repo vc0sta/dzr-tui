@@ -1,5 +1,5 @@
 {
-  "downloadLocation": "./music",
+  "downloadLocation": "/home/vcosta/Music",
   "tracknameTemplate": "%title%",
   "albumTracknameTemplate": "%tracknumber% - %title%",
   "playlistTracknameTemplate": "%position% - %artist% - %title%",

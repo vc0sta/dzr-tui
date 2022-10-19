@@ -8,21 +8,21 @@ class ArtistData:
     link: str
 
 class Artist(Container):
-    def __init__(self, data, **attrs) -> None:
+    def __init__(self, data, window_manager, **attrs) -> None:
         super().__init__(**attrs)
         self.id = data["id"]
         self.name = data["name"]
         self.link = data["link"]
-
+        self.window_manager = window_manager
         self.update_content()
 
     def update_content(self) -> None:
         self.set_widgets(
             [   
                 Splitter(
-                    str(self.id),
+                    # str(self.id),
                     self.name,
-                    self.link
+                    # self.link
                 )             
                 
             ]

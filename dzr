@@ -95,7 +95,7 @@ def _define_layout() -> ptg.Layout:
 
     return layout
 
-def search_for(query, body, filter_by=""):
+def search_for(query, body, window_manager, filter_by=""):
     if query != "":        
         if filter_by == 'track':
             response = client.api.search_track(query)
@@ -110,16 +110,17 @@ def search_for(query, body, filter_by=""):
         for data in response['data']:
             if data['type'] == 'track':
                 widgets.append(
-                    Track(player_wrapper, data,)
+                    Track(player_wrapper, data, box="EMPTY")
                     )
             elif data['type'] == 'artist':
                 widgets.append(
-                    Artist(data)
+                    Artist(data, window_manager, box="EMPTY")
                     )
             elif data['type'] == 'album':
                 widgets.append(
-                    Album(data)
+                    Album(data, window_manager, box="EMPTY")
                     )
+            widgets.append("")
 
         body.set_widgets(widgets)
 
@@ -145,9 +146,9 @@ def main(argv: list[str] | None = None) -> None:
                         search_input,
                         ptg.Splitter(
                             "[primary]Filter by:",
-                            ptg.Button(" Track ", lambda *_: search_for(search_input.value, body_content, 'track')),
-                            ptg.Button(" Artist ", lambda *_: search_for(search_input.value, body_content, 'artist')),
-                            ptg.Button(" Album ", lambda *_: search_for(search_input.value, body_content, 'album'))
+                            ptg.Button(" Track ", lambda *_: search_for(search_input.value, body_content, manager, 'track')),
+                            ptg.Button(" Artist ", lambda *_: search_for(search_input.value, body_content, manager, 'artist')),
+                            ptg.Button(" Album ", lambda *_: search_for(search_input.value, body_content, manager, 'album'))
                         )
                     )
                 , box="EMPTY")
@@ -166,22 +167,6 @@ def main(argv: list[str] | None = None) -> None:
 
         player = ptg.Window(player_wrapper, box="EMPTY")
 
-        # player_control = ptg.Window(
-        #     PlayerControl(player),
-        #     box="EMPTY"
-        # )
-
-        # player_info = ptg.Window(
-        #         PlayerInfo(player),
-        #     box="EMPTY"
-        # )
-
-        # Since the second slot, body was not assigned to, we need to manually assign
-        # to "player"
-        # manager.add(player_control, assign="player_control")
-        # manager.add(player_info, assign="player_info")
-
-        # manager.add(left_menu, assign="body_right")
         manager.add(body_window, assign="body")
 
         manager.add(player, assign="player")

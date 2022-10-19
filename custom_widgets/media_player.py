@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from threading import Thread
 from time import sleep, strftime, gmtime
-import mpv
+from mpd import MPDClient
 
 from pytermgui import Container, Button, StyleManager, real_length, tim, Splitter, Slider
 
@@ -22,7 +22,8 @@ class Player(Container):
 
     def __init__(self, **attrs) -> None:
         super().__init__(**attrs)
-        self.mpv = mpv.MPV()
+        self.mpd = MPDClient()
+        self.mpd.connect("localhost", 6600)
         
         self.is_playing = False
         self.play_button = self.buttons["none"]
@@ -34,29 +35,36 @@ class Player(Container):
 
         self.consolidated_info = ""
 
-        self.timeout = 1
+        self.timeout = 10
 
         Thread(target=self._monitor_loop, daemon=True).start()
 
 
     def _request_data(self) -> PlayerData:
-        if self.mpv.metadata != None:
-            metadata = self.mpv.metadata  
+        # try:
+        #     metadata = self.mpd.currentsong()
+        # except:
+        metadata = self.mpd.currentsong()
+        status = self.mpd.status()
+        
+        if metadata != {}:
             
-            with open("log.txt", 'w', encoding = 'utf-8') as f:
-                f.write(str(metadata))
-            self.duration = self.mpv._get_property('duration')
-            self.elapsed = self.mpv._get_property('time-pos')
+            self.elapsed = float(status.get('elapsed', '0'))
+            self.duration = float(status.get('duration', '0'))
 
             self.title = metadata.get('title','')
             self.artist = metadata.get('artist','')
             self.album = metadata.get('album','')
-            self.date = metadata.get('date','')[:4]
+            # self.date = metadata.get('date','')[:4]
 
-            self.consolidated_info = f"{self.title} - {self.artist} ({self.album} - {self.date})"
+            self.consolidated_info = f"{self.title} - {self.artist} ({self.album})"
 
-            self.is_playing = not self.mpv._get_property('pause')
-            self.play_button = self.buttons["pause"] if self.is_playing else self.buttons["play"]
+            self.state = self.mpd.status()['state']
+            
+            if self.state == 'play':
+                self.play_button = self.buttons.get('pause')
+            else:
+                self.play_button = self.buttons.get('play')
 
         else:
             self.duration = 1
@@ -70,6 +78,7 @@ class Player(Container):
             self.consolidated_info = ""
 
             self.play_button = self.buttons["none"]
+
         
     def _monitor_loop(self) -> None:
         while True:
@@ -78,11 +87,12 @@ class Player(Container):
             sleep(self.timeout)
 
     def _press_play_button(self):
-        self.mpv._set_property('pause', self.is_playing)
+        self.mpd.pause() if self.state == 'play' else self.mpd.play()
+        pass
         
-    def play(self, media_name):
-        self.mpv.play(media_name)
-        self.mpv._set_property("pause", False)
+    def play(self):
+        # self.mpd.play()
+        pass
         
     def update_content(self) -> None:
         self.set_widgets(

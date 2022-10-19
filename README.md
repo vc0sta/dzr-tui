@@ -21,5 +21,7 @@ To get your `arl`, login into your [Deezer](https://deezer.com) account, open `d
 
 ![arl](docs/arl.png)
 
+**Note 2:** Configurations related to media management can be set at `config/config.json`
+
 ## Reference:
 Downloader code taken from https://raw.githubusercontent.com/naujzed/deempy/main/dmx.py

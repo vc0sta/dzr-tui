@@ -2,9 +2,13 @@
 .venv
 *__pycache__*
 
+# Personal
+.arl
+
 # Generated log files
 failedDL.txt
 Downloaded.txt
 
 # Test files
 music
+testing.py

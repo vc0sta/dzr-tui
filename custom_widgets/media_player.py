@@ -43,13 +43,15 @@ class Player(Container):
         if self.mpv.metadata != None:
             metadata = self.mpv.metadata  
             
+            with open("log.txt", 'w', encoding = 'utf-8') as f:
+                f.write(str(metadata))
             self.duration = self.mpv._get_property('duration')
             self.elapsed = self.mpv._get_property('time-pos')
 
-            self.title = metadata['title']
-            self.artist = metadata['artist']
-            self.album = metadata['album']
-            self.date = metadata['date'][:4]
+            self.title = metadata.get('title','')
+            self.artist = metadata.get('artist','')
+            self.album = metadata.get('album','')
+            self.date = metadata.get('date','')[:4]
 
             self.consolidated_info = f"{self.title} - {self.artist} ({self.album} - {self.date})"
 
@@ -69,9 +71,6 @@ class Player(Container):
 
             self.play_button = self.buttons["none"]
         
-        
-
-
     def _monitor_loop(self) -> None:
         while True:
             self._request_data()

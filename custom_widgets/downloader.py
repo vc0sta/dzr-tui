@@ -17,41 +17,40 @@ except ImportError:
 	Spotify = None
 
 
-class LogListener:
-	
-	# opens files to write successful and failed downloads
-	def __init__(self,failedFile,successFile):
-		self.lg = open(successFile, 'a', encoding='utf-8')
-		self.flg = open(failedFile, 'a', encoding='utf-8')
-		self.failed = 0
+# class LogListener:
+# 	# opens files to write successful and failed downloads
+# 	def __init__(self,failedFile,successFile):
+# 		self.lg = open(successFile, 'a', encoding='utf-8')
+# 		self.flg = open(failedFile, 'a', encoding='utf-8')
+# 		self.failed = 0
 
-	# deemix call this function for logging to cli 
-	def send(self, key, value=None):
-		logString = formatListener(key, value)
-		# if logString:
-			# print(logString)
-		self.writetxt(key,value)
+# 	# deemix call this function for logging to cli 
+# 	def send(self, key, value=None):
+# 		logString = formatListener(key, value)
+# 		# if logString:
+# 			# print(logString)
+# 		self.writetxt(key,value)
 	
-	# write whether a track downloaded or failed
-	def writetxt(self,key, value=None):
-		if key == "updateQueue":
-			if value.get('downloaded'):
-				self.lg.write(self.geturl(value["uuid"])+'\n')
-			if value.get('failed'):
-				self.failed +=1
-				self.flg.write(self.geturl(value["uuid"])+'\t' + value['error']+'\t'+value['errid']+'\n')
+# 	# write whether a track downloaded or failed
+# 	def writetxt(self,key, value=None):
+# 		if key == "updateQueue":
+# 			if value.get('downloaded'):
+# 				self.lg.write(self.geturl(value["uuid"])+'\n')
+# 			if value.get('failed'):
+# 				self.failed +=1
+# 				self.flg.write(self.geturl(value["uuid"])+'\t' + value['error']+'\t'+value['errid']+'\n')
 				
-	# turns a uuid (<type>_<id>_<bitrate>) to deezer url
-	def geturl(self,uuid):
-		tmp = uuid.split("_")
-		return f"https://www.deezer.com/{tmp[0]}/{tmp[1]}\t{tmp[2]}"
+# 	# turns a uuid (<type>_<id>_<bitrate>) to deezer url
+# 	def geturl(self,uuid):
+# 		tmp = uuid.split("_")
+# 		return f"https://www.deezer.com/{tmp[0]}/{tmp[1]}\t{tmp[2]}"
 
 
 class DLR():
 	# protable:Bool - is the config folder in the current directory
 	def __init__(self, portable=None,failedFile='failedDL.txt',successFile='Downloaded.txt'):
 		self.dz = Deezer()
-		self.listener = LogListener(failedFile,successFile)
+		# self.listener = LogListener(failedFile,successFile)
 		self.plugins = {}
 		self.downloadObjects = []
 
@@ -99,7 +98,7 @@ class DLR():
 		for link in links:
 			try:
 				downloadObject = generateDownloadObject(
-					self.dz, link, bitrate, self.plugins, self.listener)
+					self.dz, link, bitrate, self.plugins) # , self.listener)
 			except GenerationError as e:
 				# print(f"{e.link}: {e.message}")
 				continue
@@ -116,8 +115,8 @@ class DLR():
 		for obj in self.downloadObjects:
 			if obj.__type__ == "Convertable":
 				obj = self.plugins[obj.plugin].convert(
-					self.dz, obj, self.settings, self.listener)
-			Downloader(self.dz, obj, self.settings, self.listener).start()
+					self.dz, obj, self.settings) #, self.listener)
+			Downloader(self.dz, obj, self.settings).start() #, self.listener).start()
 		# print(f"ALL DONE!: \n\t{self.listener.failed}/{sz} FAILED")
 		self.downloadObjects = []
 
@@ -168,7 +167,7 @@ class DLR():
 
 
 if __name__ == '__main__':
-	tp = DLR(portable=None,failedFile='failed.txt',successFile='succ.txt')
+	tp = DLR()
 	
 	tp.loadLinks(url=['https://www.deezer.com/en/track/722093132'], bitrate="320")
 	# tp.loadLinks(filepath='downloadsflac.txt', bitrate="flac")

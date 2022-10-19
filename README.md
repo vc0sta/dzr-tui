@@ -15,7 +15,7 @@ You can run the app using the following command:
 ./dzr
 ```
 
-> **Note:** downloading the files require to have your `arl` at `.config/deemix/.arl`.
+**Note:** downloading the files require to have your `arl` at `.config/deemix/.arl`.
 
 To get your `arl`, login into your [Deezer](https://deezer.com) account, open `developer tools` and check for the cached values:
 

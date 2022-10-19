@@ -7,9 +7,11 @@ from argparse import ArgumentParser, Namespace
 import pytermgui as ptg
 
 from custom_widgets.media_player import Player
-from custom_widgets.track_item import Track
-from custom_widgets.artist_item import Artist
-from custom_widgets.album_item import Album
+from custom_widgets.item_track import Track
+from custom_widgets.item_artist import Artist
+from custom_widgets.item_album import Album
+
+import configparser
 
 from deezer import Deezer
 
@@ -24,7 +26,10 @@ welcome_message="""
 ██████╔╝███████╗██║  ██║      ╚██████╗███████╗██║
 ╚═════╝ ╚══════╝╚═╝  ╚═╝       ╚═════╝╚══════╝╚═╝
 
-        THE TERMINAL DEEZER CLIENT
+THE TERMINAL DEEZER CLIENT
+
+To use download feature, you must have a valid .arl in your config folder.
+Check the README.md for instructions.
 """
 
 def _process_arguments(argv: list[str] | None = None) -> Namespace:
@@ -91,21 +96,21 @@ def _define_layout() -> ptg.Layout:
     return layout
 
 def search_for(query, body, filter_by=""):
-    search = {
-        "track": client.api.search_track(query),
-        "artist": client.api.search_artist(query),
-        "album": client.api.search_album(query),
-        "default": client.api.search(query)
-    }
-
-    if query != "":
-        response = search.get(filter_by, "default")
+    if query != "":        
+        if filter_by == 'track':
+            response = client.api.search_track(query)
+        elif filter_by == 'artist':
+            response = client.api.search_artist(query)
+        elif filter_by == 'album':
+            response = client.api.search_album(query)
+        else:
+            response = client.api.search(query)
+        
         widgets = []
         for data in response['data']:
-            
             if data['type'] == 'track':
                 widgets.append(
-                    Track(player_wrapper, data)
+                    Track(player_wrapper, data,)
                     )
             elif data['type'] == 'artist':
                 widgets.append(
@@ -130,7 +135,7 @@ def main(argv: list[str] | None = None) -> None:
     with ptg.WindowManager() as manager:
         manager.layout = _define_layout()
 
-        search_input = ptg.InputField(value="", prompt="[primary]Search for:")
+        search_input = ptg.InputField(value="", prompt="[primary]Search for: ")
 
         body_content = ptg.Container(welcome_message)
         body_window = ptg.Window(body_content, box='EMPTY')
@@ -150,7 +155,7 @@ def main(argv: list[str] | None = None) -> None:
         user_menu = ptg.Window(
             ptg.Splitter(
                 # ptg.Button("User", lambda *_: manager.stop()),
-                ptg.Button("[bold red] X ", lambda *_: manager.stop()),
+                ptg.Button(" Close ", lambda *_: manager.stop()),
             ),
             box="EMPTY"
         )

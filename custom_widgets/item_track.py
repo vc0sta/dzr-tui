@@ -2,10 +2,15 @@ from dataclasses import dataclass
 from threading import Thread
 from time import sleep
 from time import strftime, gmtime
+import os
 
 from pytermgui import Container, StyleManager, real_length, tim, Button, Splitter
 
 from .downloader import DLR
+from threading import Thread
+from deezer import Deezer
+
+client = Deezer()
 
 @dataclass
 class TrackData:
@@ -29,7 +34,8 @@ class Track(Container):
         self.link = data["link"]
         self.artist_name = data["artist"]["name"],
         self.artist_link = data["artist"]["link"]
-        self.album = data["album"]["title"]
+        self.album = data["album"]
+        self.track_number = '00'
 
         self.media_player = media_player
 
@@ -37,20 +43,31 @@ class Track(Container):
         self.update_content()
 
     def download(self):
-        download_manager = DLR(portable=None)
+        download_manager = DLR(portable=True)
         # TODO: The bitrate/location should be defined by the end-user (TUI)
         #      Maybe some queue should be created as well to deal with multiple downloads
         #      downloader.py already has such funcionality, this should be considered while merging.
         download_manager.loadLinks(url=[self.link], bitrate="320")
-        download_manager.change('downloadLocation','./music/')
         download_manager.getsongs()
 
     def play(self):
-        self.download()
+        album_tracks = client.api.get_album_tracks(self.album['id'])
+        track_info = next((item for item in album_tracks['data'] if item['id'] == self.id), None)
+        
+        self.track_number = track_info['track_position']
 
         # TODO: Understand why artist_name is a Tuple
         #   (keep in mind that this is a temp approach and play() should work with streaming)
-        self.media_player.play(f"music/{self.artist_name[0]} - {self.title}.mp3")
+
+        file_name = "./music/{artist_name}/{album_name}/{track_number:02d} - {title}.mp3".format(
+            artist_name=self.artist_name[0],
+            album_name=self.album['title'],
+            track_number=self.track_number,
+            title=self.title
+        )
+
+        if os.path.exists(file_name):
+            self.media_player.play(file_name)
         
     def update_content(self) -> None:
         self.set_widgets(
@@ -58,7 +75,7 @@ class Track(Container):
                 Splitter(
                     self.title,
                     self.artist_name,
-                    self.album,
+                    self.album["title"],
                     Splitter(
                         Button(self.buttons["play"], lambda *_: self.play()),
                         Button(self.buttons["download"], lambda *_: self.download()))
